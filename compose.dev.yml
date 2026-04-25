@@ -1,0 +1,50 @@
+version: '3.8'
+
+# Development compose file - uses H2 database and Redis
+# Usage: docker-compose -f compose.dev.yml up -d
+
+services:
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: musicapp-redis-dev
+    ports:
+      - "6379:6379"
+    command: redis-server
+    volumes:
+      - redis_data_dev:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - musicapp-network-dev
+
+  # Music App Backend (with H2 database)
+  musicapp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: musicapp-backend-dev
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ""
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - musicapp-network-dev
+    restart: unless-stopped
+
+volumes:
+  redis_data_dev:
+    driver: local
+
+networks:
+  musicapp-network-dev:
+    driver: bridge

@@ -6,6 +6,7 @@ import nhantr.musicapp.dto.request.RegisterRequest;
 import nhantr.musicapp.dto.response.LoginResponse;
 import nhantr.musicapp.dto.response.UserResponse;
 import nhantr.musicapp.entity.User;
+import nhantr.musicapp.enums.ErrorCode;
 import nhantr.musicapp.enums.Role;
 import nhantr.musicapp.exception.AppException;
 import nhantr.musicapp.mapper.UserMapper;
@@ -43,10 +44,10 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public UserResponse register(RegisterRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new AppException(400, "Username already exists");
+            throw new AppException(ErrorCode.USERNAME_ALREADY_EXISTS.getCode(), ErrorCode.USERNAME_ALREADY_EXISTS.getMessage());
         }
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new AppException(400, "Email already exists");
+            throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTS.getCode(), ErrorCode.EMAIL_ALREADY_EXISTS.getMessage());
         }
 
         User user = User.builder()
@@ -64,10 +65,10 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository
                 .findByUsername(request.getUsername())
                 .or(() -> userRepository.findByEmail(request.getUsername()))
-                .orElseThrow(() -> new AppException(401, "Invalid username or password"));
+                .orElseThrow(() -> new AppException(ErrorCode.INVALID_CREDENTIALS.getCode(), ErrorCode.INVALID_CREDENTIALS.getMessage()));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new AppException(401, "Invalid username or password");
+            throw new AppException(ErrorCode.INVALID_CREDENTIALS.getCode(), ErrorCode.INVALID_CREDENTIALS.getMessage());
         }
 
         String token = jwtUtil.generateToken(user.getUsername());
@@ -82,7 +83,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void logout(String token) {
         if (token == null || token.isBlank()) {
-            throw new AppException(400, "Token is required");
+            throw new AppException(ErrorCode.TOKEN_REQUIRED.getCode(), ErrorCode.TOKEN_REQUIRED.getMessage());
         }
         redisService.blacklistToken(token, jwtUtil.getRemainingValidityMs(token));
     }
@@ -90,24 +91,24 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginResponse refreshToken(String token) {
         if (token == null || token.isBlank()) {
-            throw new AppException(400, "Token is required");
+            throw new AppException(ErrorCode.TOKEN_REQUIRED.getCode(), ErrorCode.TOKEN_REQUIRED.getMessage());
         }
         if (redisService.isTokenBlacklisted(token)) {
-            throw new AppException(401, "Token has been logged out");
+            throw new AppException(ErrorCode.TOKEN_LOGGED_OUT.getCode(), ErrorCode.TOKEN_LOGGED_OUT.getMessage());
         }
 
         String username;
         try {
             username = jwtUtil.extractUsername(token);
         } catch (Exception ex) {
-            throw new AppException(401, "Invalid token");
+            throw new AppException(ErrorCode.INVALID_TOKEN.getCode(), ErrorCode.INVALID_TOKEN.getMessage());
         }
 
         Optional<User> optionalUser = userRepository.findByUsername(username);
-        User user = optionalUser.orElseThrow(() -> new AppException(404, "User not found"));
+        User user = optionalUser.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND.getCode(), ErrorCode.USER_NOT_FOUND.getMessage()));
 
         if (!jwtUtil.validateToken(token, username)) {
-            throw new AppException(401, "Token is expired or invalid");
+            throw new AppException(ErrorCode.TOKEN_EXPIRED.getCode(), ErrorCode.TOKEN_EXPIRED.getMessage());
         }
 
         String newToken = jwtUtil.generateToken(user.getUsername());
@@ -123,12 +124,12 @@ public class AuthServiceImpl implements AuthService {
     public UserResponse getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getName())) {
-            throw new AppException(401, "Unauthorized");
+            throw new AppException(ErrorCode.UNAUTHORIZED.getCode(), ErrorCode.UNAUTHORIZED.getMessage());
         }
 
         User user = userRepository
                 .findByUsername(authentication.getName())
-                .orElseThrow(() -> new AppException(404, "User not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND.getCode(), ErrorCode.USER_NOT_FOUND.getMessage()));
         return userMapper.toResponse(user);
     }
 }
