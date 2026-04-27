@@ -1,5 +1,6 @@
 package nhantr.musicapp.dto.response;
 
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,11 +12,8 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoginResponse {
+public class ArtistSummaryResponse {
 
-    private String accessToken;
-    private String refreshToken;
-    private String tokenType;
-    private long expiresIn;
-    private UserResponse user;
+    private UUID id;
+    private String name;
 }

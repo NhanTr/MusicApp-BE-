@@ -1,5 +1,6 @@
 package nhantr.musicapp.dto.response;
 
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,11 +12,10 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoginResponse {
+public class SearchResponse {
 
-    private String accessToken;
-    private String refreshToken;
-    private String tokenType;
-    private long expiresIn;
-    private UserResponse user;
+    private List<SongResponse> songs;
+    private List<ArtistSummaryResponse> artists;
+    private List<AlbumSummaryResponse> albums;
+    private List<PlaylistResponse> playlists;
 }

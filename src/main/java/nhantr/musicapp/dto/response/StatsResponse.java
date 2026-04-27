@@ -11,11 +11,12 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoginResponse {
+public class StatsResponse {
 
-    private String accessToken;
-    private String refreshToken;
-    private String tokenType;
-    private long expiresIn;
-    private UserResponse user;
+    private long totalUsers;
+    private long totalSongs;
+    private long totalArtists;
+    private long totalPlaylists;
+    private long pendingUploads;
+    private long totalListens;
 }
