@@ -5,6 +5,7 @@ import nhantr.musicapp.dto.request.LoginRequest;
 import nhantr.musicapp.dto.request.RegisterRequest;
 import nhantr.musicapp.dto.response.APIResponse;
 import nhantr.musicapp.dto.response.LoginResponse;
+import nhantr.musicapp.dto.response.RefreshTokenRespose;
 import nhantr.musicapp.dto.response.UserResponse;
 import nhantr.musicapp.exception.AppException;
 import nhantr.musicapp.service.AuthService;
@@ -44,7 +45,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<APIResponse<LoginResponse>> refreshToken(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<APIResponse<RefreshTokenRespose>> refreshToken(@RequestHeader("Authorization") String authHeader) {
         String token = extractBearerToken(authHeader);
         return ResponseEntity.ok(APIResponse.success(authService.refreshToken(token)));
     }
