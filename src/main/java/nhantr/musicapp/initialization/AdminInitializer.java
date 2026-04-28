@@ -8,6 +8,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import static java.time.LocalDateTime.now;
 
 /**
  * Initialize admin user on application startup
@@ -43,6 +44,7 @@ public class AdminInitializer implements CommandLineRunner {
                     .email("admin@musicapp.com")
                     .password(passwordEncoder.encode("admin123"))
                     .role(Role.ADMIN)
+                    .createdAt(now())
                     .build();
 
             userRepository.save(adminUser);

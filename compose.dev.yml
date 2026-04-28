@@ -1,50 +1,47 @@
 version: '3.8'
 
-# Development compose file - uses H2 database and Redis
-# Usage: docker-compose -f compose.dev.yml up -d
-
 services:
-  # Redis Cache
-  redis:
-    image: redis:7-alpine
-    container_name: musicapp-redis-dev
+  postgres:
+    image: postgres:16-alpine
+    container_name: musicapp-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-SoundCloudDB}
+      POSTGRES_USER: ${DB_USERNAME:-app_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-app_user_1412}
     ports:
-      - "6379:6379"
-    command: redis-server
+      - "${DB_PORT:-5432}:5432" # Mở port để app local kết nối vào
     volumes:
-      - redis_data_dev:/data
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-app_user}"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - musicapp-network-dev
+      - musicapp-network
 
-  # Music App Backend (with H2 database)
-  musicapp:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: musicapp-backend-dev
+  redis:
+    image: redis:7-alpine
+    container_name: musicapp-redis-dev
     ports:
-      - "8080:8080"
-    environment:
-      SPRING_PROFILES_ACTIVE: dev
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_PASSWORD: ""
-    depends_on:
-      redis:
-        condition: service_healthy
+      - "${REDIS_PORT:-6379}:6379" # Mở port để app local kết nối vào
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis123}
+    volumes:
+      - redis_data_dev:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-redis123}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
-      - musicapp-network-dev
-    restart: unless-stopped
+      - musicapp-network
+
+# XÓA BỎ service 'musicapp' ở đây để tránh xung đột khi chạy mvnw local
 
 volumes:
+  postgres_data:
   redis_data_dev:
-    driver: local
 
 networks:
-  musicapp-network-dev:
+  musicapp-network:
     driver: bridge

@@ -4,6 +4,8 @@ import nhantr.musicapp.dto.request.LoginRequest;
 import nhantr.musicapp.dto.request.RegisterRequest;
 import nhantr.musicapp.dto.response.LoginResponse;
 import nhantr.musicapp.dto.response.UserResponse;
+import nhantr.musicapp.dto.response.RefreshTokenRespose;
+import nhantr.musicapp.dto.request.UpdatePasswordRequest;
 
 public interface AuthService {
 
@@ -13,7 +15,9 @@ public interface AuthService {
 
     void logout(String token);
 
-    LoginResponse refreshToken(String token);
+    RefreshTokenRespose refreshToken(String token);
+
+    String updatePassword(UpdatePasswordRequest request);
 
     UserResponse getCurrentUser();
 }

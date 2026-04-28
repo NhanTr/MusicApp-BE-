@@ -3,19 +3,20 @@ package nhantr.musicapp.dto.request;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.experimental.FieldDefaults;
+import lombok.Data;
 
-@Getter
-@Setter
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = lombok.AccessLevel.PRIVATE)
+
 public class ArtistRequest {
 
     @NotBlank(message = "name is required")
-    private String name;
-    private String bio;
-    private String avatarUrl;
+    String name;
+    String bio;
+    String avatarUrl;
 }

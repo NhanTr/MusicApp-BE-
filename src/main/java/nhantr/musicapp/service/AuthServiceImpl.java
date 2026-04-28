@@ -1,9 +1,13 @@
 package nhantr.musicapp.service;
 
+import static java.time.LocalDateTime.now;
+
 import java.util.Optional;
 import nhantr.musicapp.dto.request.LoginRequest;
 import nhantr.musicapp.dto.request.RegisterRequest;
 import nhantr.musicapp.dto.response.LoginResponse;
+import nhantr.musicapp.dto.response.RefreshTokenRespose;
+import nhantr.musicapp.dto.request.UpdatePasswordRequest;
 import nhantr.musicapp.dto.response.UserResponse;
 import nhantr.musicapp.entity.User;
 import nhantr.musicapp.enums.ErrorCode;
@@ -12,20 +16,26 @@ import nhantr.musicapp.exception.AppException;
 import nhantr.musicapp.mapper.UserMapper;
 import nhantr.musicapp.repository.UserRepository;
 import nhantr.musicapp.util.JwtUtil;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
+@FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class AuthServiceImpl implements AuthService {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
-    private final RedisService redisService;
-    private final UserMapper userMapper;
+    final UserRepository userRepository;
+    final PasswordEncoder passwordEncoder;
+    final JwtUtil jwtUtil;
+    final RedisService redisService;
+    final UserMapper userMapper;
 
     public AuthServiceImpl(
             UserRepository userRepository,
@@ -55,7 +65,10 @@ public class AuthServiceImpl implements AuthService {
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(Role.USER)
+                .createdAt(now())
                 .build();
+
+        log.info("Register success");
 
         return userMapper.toResponse(userRepository.save(user));
     }
@@ -71,25 +84,31 @@ public class AuthServiceImpl implements AuthService {
             throw new AppException(ErrorCode.INVALID_CREDENTIALS.getCode(), ErrorCode.INVALID_CREDENTIALS.getMessage());
         }
 
-        String token = jwtUtil.generateToken(user.getUsername());
+        String accessToken = jwtUtil.generateAccessToken(user.getUsername());
+        String refreshToken = jwtUtil.generateRefreshToken(user.getUsername());
+
+        log.info("User '{}' logged in successfully", user.getUsername());
+
         return LoginResponse.builder()
-                .accessToken(token)
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
                 .tokenType("Bearer")
-                .expiresIn(jwtUtil.getRemainingValidityMs(token) / 1000)
+                .expiresIn(jwtUtil.getRemainingValidityMs(accessToken) / 1000)
                 .user(userMapper.toResponse(user))
                 .build();
     }
 
     @Override
-    public void logout(String token) {
-        if (token == null || token.isBlank()) {
+    public void logout(String refreshToken) {
+        if (refreshToken == null || refreshToken.isBlank()) {
             throw new AppException(ErrorCode.TOKEN_REQUIRED.getCode(), ErrorCode.TOKEN_REQUIRED.getMessage());
         }
-        redisService.blacklistToken(token, jwtUtil.getRemainingValidityMs(token));
+        redisService.blacklistToken(refreshToken, jwtUtil.getRemainingValidityMs(refreshToken));
+        log.info("Token blacklisted successfully");
     }
 
     @Override
-    public LoginResponse refreshToken(String token) {
+    public RefreshTokenRespose refreshToken(String token) {
         if (token == null || token.isBlank()) {
             throw new AppException(ErrorCode.TOKEN_REQUIRED.getCode(), ErrorCode.TOKEN_REQUIRED.getMessage());
         }
@@ -111,14 +130,41 @@ public class AuthServiceImpl implements AuthService {
             throw new AppException(ErrorCode.TOKEN_EXPIRED.getCode(), ErrorCode.TOKEN_EXPIRED.getMessage());
         }
 
-        String newToken = jwtUtil.generateToken(user.getUsername());
-        return LoginResponse.builder()
+        String newToken = jwtUtil.generateAccessToken(user.getUsername());
+
+        log.info("Access token refreshed for user '{}'", user.getUsername());
+
+        return RefreshTokenRespose.builder()
                 .accessToken(newToken)
                 .tokenType("Bearer")
                 .expiresIn(jwtUtil.getRemainingValidityMs(newToken) / 1000)
-                .user(userMapper.toResponse(user))
                 .build();
     }
+
+    @Override
+    public String updatePassword(UpdatePasswordRequest request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getName())) {
+            throw new AppException(ErrorCode.UNAUTHORIZED.getCode(), ErrorCode.UNAUTHORIZED.getMessage());
+        }
+        if (!request.getNewPassword().equals(request.getConfirmNewPassword())) {
+            throw new AppException(ErrorCode.PASSWORD_MISMATCH.getCode(), ErrorCode.PASSWORD_MISMATCH.getMessage());
+        }
+
+        User user = userRepository
+                .findByUsername(authentication.getName())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND.getCode(), ErrorCode.USER_NOT_FOUND.getMessage()));
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new AppException(ErrorCode.INVALID_CURRENT_PASSWORD.getCode(), ErrorCode.INVALID_CURRENT_PASSWORD.getMessage());
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+        log.info("User '{}' updated password successfully", user.getUsername());
+
+        return "Password updated successfully";
+    }
+    
 
     @Override
     public UserResponse getCurrentUser() {
@@ -130,6 +176,9 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository
                 .findByUsername(authentication.getName())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND.getCode(), ErrorCode.USER_NOT_FOUND.getMessage()));
+        
+        log.info("Current user '{}' retrieved successfully", user.getUsername());
+
         return userMapper.toResponse(user);
     }
 }

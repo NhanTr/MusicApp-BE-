@@ -3,6 +3,7 @@ package nhantr.musicapp.controller;
 import jakarta.validation.Valid;
 import nhantr.musicapp.dto.request.LoginRequest;
 import nhantr.musicapp.dto.request.RegisterRequest;
+import nhantr.musicapp.dto.request.UpdatePasswordRequest;
 import nhantr.musicapp.dto.response.APIResponse;
 import nhantr.musicapp.dto.response.LoginResponse;
 import nhantr.musicapp.dto.response.RefreshTokenRespose;
@@ -12,6 +13,7 @@ import nhantr.musicapp.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,6 +55,11 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<APIResponse<UserResponse>> me() {
         return ResponseEntity.ok(APIResponse.success(authService.getCurrentUser()));
+    }
+
+    @PutMapping("/update-password")
+    public ResponseEntity<APIResponse<String>> updatePassword(@Valid @RequestBody  UpdatePasswordRequest request) {
+        return ResponseEntity.ok(APIResponse.success(authService.updatePassword(request)));
     }
 
     private String extractBearerToken(String authHeader) {

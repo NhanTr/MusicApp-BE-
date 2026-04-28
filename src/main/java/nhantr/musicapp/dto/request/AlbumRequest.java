@@ -6,23 +6,23 @@ import java.time.LocalDate;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.Data;
+import lombok.experimental.FieldDefaults;
 
-@Getter
-@Setter
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class AlbumRequest {
 
     @NotBlank(message = "name is required")
-    private String name;
+    String name;
 
     @NotNull(message = "artistId is required")
-    private UUID artistId;
+    UUID artistId;
 
-    private LocalDate releaseDate;
-    private String coverUrl;
+    LocalDate releaseDate;
+    String coverUrl;
 }
