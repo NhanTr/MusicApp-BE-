@@ -23,10 +23,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
+@AllArgsConstructor
 @Slf4j
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class AuthServiceImpl implements AuthService {
@@ -37,18 +39,6 @@ public class AuthServiceImpl implements AuthService {
     final RedisService redisService;
     final UserMapper userMapper;
 
-    public AuthServiceImpl(
-            UserRepository userRepository,
-            PasswordEncoder passwordEncoder,
-            JwtUtil jwtUtil,
-            RedisService redisService,
-            UserMapper userMapper) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtUtil = jwtUtil;
-        this.redisService = redisService;
-        this.userMapper = userMapper;
-    }
 
     @Override
     @Transactional

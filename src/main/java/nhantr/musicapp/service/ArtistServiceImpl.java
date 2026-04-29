@@ -2,6 +2,8 @@ package nhantr.musicapp.service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nhantr.musicapp.dto.request.ArtistRequest;
 import nhantr.musicapp.dto.response.ArtistResponse;
@@ -20,6 +22,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 @Service
+@AllArgsConstructor
 @Slf4j
 public class ArtistServiceImpl implements ArtistService {
 
@@ -28,19 +31,6 @@ public class ArtistServiceImpl implements ArtistService {
     private final SongRepository songRepository;
     private final CurrentUserService currentUserService;
     private final MusicMapper musicMapper;
-
-    public ArtistServiceImpl(
-            ArtistRepository artistRepository,
-            FollowArtistRepository followArtistRepository,
-            SongRepository songRepository,
-            CurrentUserService currentUserService,
-            MusicMapper musicMapper) {
-        this.artistRepository = artistRepository;
-        this.followArtistRepository = followArtistRepository;
-        this.songRepository = songRepository;
-        this.currentUserService = currentUserService;
-        this.musicMapper = musicMapper;
-    }
 
     @Override
     public PageResponse<ArtistResponse> getArtists(int page, int size) {

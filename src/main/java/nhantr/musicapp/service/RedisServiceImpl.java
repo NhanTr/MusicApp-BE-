@@ -23,7 +23,7 @@ public class RedisServiceImpl implements RedisService {
         try {
             redisTemplate.opsForValue().set(TOKEN_BLACKLIST_PREFIX + token, "1", Duration.ofMillis(Math.max(ttlInMs, 1L)));
         } catch (DataAccessException ex) {
-            log.warn("Failed to write blacklisted token to Redis: {}", ex.getMessage());
+            log.warn("Failed to write blacklisted token to Redis: {}", ex);
         }
     }
 
@@ -32,7 +32,7 @@ public class RedisServiceImpl implements RedisService {
         try {
             return Boolean.TRUE.equals(redisTemplate.hasKey(TOKEN_BLACKLIST_PREFIX + token));
         } catch (DataAccessException ex) {
-            log.warn("Failed to read blacklisted token from Redis: {}", ex.getMessage());
+            log.warn("Failed to read blacklisted token from Redis: {}", ex);
             return false;
         }
     }

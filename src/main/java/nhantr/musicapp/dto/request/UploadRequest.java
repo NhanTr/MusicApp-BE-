@@ -5,24 +5,25 @@ import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.experimental.FieldDefaults;
+import lombok.Data;
 
-@Getter
-@Setter
+
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class UploadRequest {
 
     @NotBlank(message = "title is required")
-    private String title;
+    String title;
 
     @NotNull(message = "artistId is required")
-    private UUID artistId;
+    UUID artistId;
 
-    private UUID albumId;
-    private String fileUrl;
-    private String coverUrl;
+    UUID albumId;
+    String fileUrl;
+    String coverUrl;
 }

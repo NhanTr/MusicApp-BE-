@@ -18,15 +18,20 @@ public class JwtUtil {
 
     private final SecretKey signingKey;
     private final long expirationMs;
+    private final long refreshExpirationMs;
+
+
 
     public JwtUtil(
             @Value("${jwt.secret}") String jwtSecret,
-            @Value("${jwt.expiration-ms}") long expirationMs) {
+            @Value("${jwt.expiration-ms}") long expirationMs,
+            @Value("${jwt.refresh-expiration-ms}") long refreshExpirationMs) {
         this.signingKey = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
         this.expirationMs = expirationMs;
+        this.refreshExpirationMs = refreshExpirationMs;
     }
 
-    public String generateToken(String username) {
+    public String generateAccessToken(String username) {
         return generateToken(username, Duration.ofMillis(expirationMs));
     }
 
@@ -40,7 +45,10 @@ public class JwtUtil {
                 .signWith(signingKey)
                 .compact();
     }
-
+    public String generateRefreshToken(String username) {
+        return generateToken(username, Duration.ofMillis(refreshExpirationMs));
+    }
+    
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }

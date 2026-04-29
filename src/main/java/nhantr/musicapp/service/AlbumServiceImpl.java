@@ -3,6 +3,8 @@ package nhantr.musicapp.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nhantr.musicapp.dto.request.AlbumRequest;
 import nhantr.musicapp.dto.response.AlbumResponse;
@@ -22,6 +24,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 @Service
+@AllArgsConstructor
 @Slf4j
 public class AlbumServiceImpl implements AlbumService {
 
@@ -29,17 +32,6 @@ public class AlbumServiceImpl implements AlbumService {
     private final ArtistRepository artistRepository;
     private final SongRepository songRepository;
     private final MusicMapper musicMapper;
-
-    public AlbumServiceImpl(
-            AlbumRepository albumRepository,
-            ArtistRepository artistRepository,
-            SongRepository songRepository,
-            MusicMapper musicMapper) {
-        this.albumRepository = albumRepository;
-        this.artistRepository = artistRepository;
-        this.songRepository = songRepository;
-        this.musicMapper = musicMapper;
-    }
 
     @Override
     public PageResponse<AlbumResponse> getAlbums(int page, int size) {

@@ -9,6 +9,12 @@
     "type": "java.lang.Long",
     "description": "JWT token expiration time in milliseconds. Default is 1 hour (3600000 ms).",
     "defaultValue": 3600000
+  },
+  {
+    "name": "jwt.refresh-expiration-ms",
+    "type": "java.lang.Long",
+    "description": "JWT refresh token expiration time in milliseconds. Default is 7 days (604800000 ms).",
+    "defaultValue": 604800000
   }
 ],
 "hints": [
