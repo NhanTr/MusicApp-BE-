@@ -14,7 +14,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UploadResponse {
-
+    
     private UUID id;
     private String status;
     private LocalDateTime createdAt;

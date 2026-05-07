@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @RestController
@@ -63,6 +65,28 @@ public class SongControlller {
         APIResponse<SongResponse> response = APIResponse.success(songService.create(request));
         response.setCode(201);
         response.setMessage("Song created");
+        return ResponseEntity.status(201).body(response);
+    }
+
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<APIResponse<SongResponse>> createWithUpload(
+            @RequestParam("fileSound") MultipartFile fileSound,
+            @RequestParam(value = "fileImage", required = false) MultipartFile fileImage,
+            @RequestParam("title") String title,
+            @RequestParam(value = "artistId", required = false) UUID artistId,
+            @RequestParam(value = "albumId", required = false) UUID albumId,
+            @RequestParam(value = "duration", required = false, defaultValue = "0") int duration
+    ) {
+        SongRequest request = SongRequest.builder()
+                .title(title)
+                .artistId(artistId)
+                .albumId(albumId)
+                .duration(duration)
+                .build();
+
+        APIResponse<SongResponse> response = APIResponse.success(songService.createWithUpload(request, fileSound, fileImage));
+        response.setCode(201);
+        response.setMessage("Song uploaded and pending review");
         return ResponseEntity.status(201).body(response);
     }
 

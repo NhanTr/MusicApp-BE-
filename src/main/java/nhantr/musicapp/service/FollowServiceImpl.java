@@ -15,6 +15,7 @@ import nhantr.musicapp.repository.FollowArtistRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
@@ -54,6 +55,7 @@ public class FollowServiceImpl implements FollowService {
     }
 
     @Override
+    @Transactional
     public void unfollowArtist(UUID artistId) {
         User user = currentUserService.getCurrentUserEntity();
         log.info("Unfollow artist artistId={}, userId={}", artistId, user.getId());

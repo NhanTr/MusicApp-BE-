@@ -5,7 +5,6 @@ import nhantr.musicapp.dto.request.RejectUploadRequest;
 import nhantr.musicapp.dto.request.UploadRequest;
 import nhantr.musicapp.dto.response.PageResponse;
 import nhantr.musicapp.dto.response.UploadResponse;
-
 public interface UploadService {
 
     UploadResponse create(UploadRequest request);

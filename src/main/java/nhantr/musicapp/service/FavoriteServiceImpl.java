@@ -2,6 +2,8 @@ package nhantr.musicapp.service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nhantr.musicapp.dto.response.FavoriteResponse;
 import nhantr.musicapp.dto.response.PageResponse;
@@ -17,8 +19,10 @@ import nhantr.musicapp.repository.SongRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@AllArgsConstructor
 @Slf4j
 public class FavoriteServiceImpl implements FavoriteService {
 
@@ -26,17 +30,6 @@ public class FavoriteServiceImpl implements FavoriteService {
     private final SongRepository songRepository;
     private final CurrentUserService currentUserService;
     private final MusicMapper musicMapper;
-
-    public FavoriteServiceImpl(
-            FavoriteRepository favoriteRepository,
-            SongRepository songRepository,
-            CurrentUserService currentUserService,
-            MusicMapper musicMapper) {
-        this.favoriteRepository = favoriteRepository;
-        this.songRepository = songRepository;
-        this.currentUserService = currentUserService;
-        this.musicMapper = musicMapper;
-    }
 
     @Override
     public PageResponse<FavoriteResponse> getFavorites(int page, int size) {
@@ -72,6 +65,7 @@ public class FavoriteServiceImpl implements FavoriteService {
     }
 
     @Override
+    @Transactional
     public void unlike(UUID songId) {
         User user = currentUserService.getCurrentUserEntity();
         log.info("Unlike song songId={}, userId={}", songId, user.getId());

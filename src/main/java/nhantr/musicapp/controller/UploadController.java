@@ -3,7 +3,6 @@ package nhantr.musicapp.controller;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import nhantr.musicapp.dto.request.RejectUploadRequest;
-import nhantr.musicapp.dto.request.UploadRequest;
 import nhantr.musicapp.dto.response.APIResponse;
 import nhantr.musicapp.dto.response.PageResponse;
 import nhantr.musicapp.dto.response.UploadResponse;
@@ -11,13 +10,11 @@ import nhantr.musicapp.service.UploadService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/uploads")
@@ -29,25 +26,8 @@ public class UploadController {
         this.uploadService = uploadService;
     }
 
-    @PostMapping
-    public ResponseEntity<APIResponse<UploadResponse>> create(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam("title") String title,
-            @RequestParam("artistId") UUID artistId,
-            @RequestParam(value = "albumId", required = false) UUID albumId,
-            @RequestParam(value = "coverImage", required = false) MultipartFile coverImage) {
-        UploadRequest request = UploadRequest.builder()
-                .title(title)
-                .artistId(artistId)
-                .albumId(albumId)
-                .fileUrl(file == null ? null : file.getOriginalFilename())
-                .coverUrl(coverImage == null ? null : coverImage.getOriginalFilename())
-                .build();
-        APIResponse<UploadResponse> response = APIResponse.success(uploadService.create(request));
-        response.setCode(202);
-        response.setMessage("Upload submitted for review");
-        return ResponseEntity.status(202).body(response);
-    }
+    // POST /api/uploads - DEPRECATED: Upload records are now auto-created when uploading a song
+    // Use POST /api/songs (multipart) instead
 
     @GetMapping("/me")
     public ResponseEntity<APIResponse<PageResponse<UploadResponse>>> myUploads(

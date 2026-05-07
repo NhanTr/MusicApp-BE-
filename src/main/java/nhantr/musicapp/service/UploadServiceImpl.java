@@ -1,7 +1,9 @@
 package nhantr.musicapp.service;
 
-import java.time.LocalDateTime;
+
 import java.util.UUID;
+
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nhantr.musicapp.dto.request.RejectUploadRequest;
 import nhantr.musicapp.dto.request.UploadRequest;
@@ -9,41 +11,42 @@ import nhantr.musicapp.dto.response.PageResponse;
 import nhantr.musicapp.dto.response.UploadResponse;
 import nhantr.musicapp.entity.Upload;
 import nhantr.musicapp.entity.User;
+import nhantr.musicapp.entity.Song;
 import nhantr.musicapp.enums.ErrorCode;
 import nhantr.musicapp.exception.AppException;
 import nhantr.musicapp.mapper.MusicMapper;
 import nhantr.musicapp.repository.UploadRepository;
+import nhantr.musicapp.repository.SongRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 @Slf4j
 public class UploadServiceImpl implements UploadService {
 
     private final UploadRepository uploadRepository;
+    private final SongRepository songRepository;
     private final CurrentUserService currentUserService;
     private final MusicMapper musicMapper;
-
-    public UploadServiceImpl(
-            UploadRepository uploadRepository,
-            CurrentUserService currentUserService,
-            MusicMapper musicMapper) {
-        this.uploadRepository = uploadRepository;
-        this.currentUserService = currentUserService;
-        this.musicMapper = musicMapper;
-    }
-
+    
     @Override
     public UploadResponse create(UploadRequest request) {
         User user = currentUserService.getCurrentUserEntity();
-        log.info("Create upload userId={}, title={}", user.getId(), request.getTitle());
+        log.info("Create upload userId={}, songId={}", user.getId(), request.getSongId());
+
+        Song song = null;
+        if (request.getSongId() != null) {
+            song = songRepository.findById(request.getSongId())
+                    .orElseThrow(() -> new AppException(ErrorCode.SONG_NOT_FOUND.getCode(), ErrorCode.SONG_NOT_FOUND.getMessage()));
+        }
 
         Upload upload = Upload.builder()
                 .user(user)
-            .song(null)
+                .song(song)
                 .status("PENDING")
-                .createdAt(LocalDateTime.now())
+                .createdAt(java.time.LocalDateTime.now())
                 .build();
 
         upload = uploadRepository.save(upload);

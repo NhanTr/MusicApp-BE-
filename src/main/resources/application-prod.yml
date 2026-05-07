@@ -1,6 +1,10 @@
 spring:
   application:
     name: musicapp
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:5432/${DB_NAME:SoundCloudDB}
     driver-class-name: org.postgresql.Driver
@@ -27,3 +31,9 @@ jwt:
   secret: ${JWT_SECRET:your-secret-key-must-be-at-least-32-characters-long}
   expiration-ms: ${JWT_EXPIRATION_MS:3600000}
   refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000}
+aws:
+  s3:
+    bucket-name: ${AWS_S3_BUCKET_NAME:amzn-s3-bucket-soundstorage}
+    region: ${AWS_REGION:ap-southeast-1}
+    access-key: ${AWS_ACCESS_KEY_ID:}
+    secret-key: ${AWS_SECRET_ACCESS_KEY:}

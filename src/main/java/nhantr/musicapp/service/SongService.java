@@ -16,6 +16,8 @@ public interface SongService {
     PageResponse<SongResponse> getTrending(int page, int size);
 
     SongResponse create(SongRequest request);
+    
+    SongResponse createWithUpload(SongRequest request, org.springframework.web.multipart.MultipartFile audioFile, org.springframework.web.multipart.MultipartFile coverImage);
 
     SongResponse update(UUID id, SongRequest request);
 

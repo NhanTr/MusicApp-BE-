@@ -2,8 +2,8 @@ package nhantr.musicapp.service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
-
-import lombok.AllArgsConstructor;
+import java.io.IOException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nhantr.musicapp.dto.request.SongRequest;
 import nhantr.musicapp.dto.response.PageResponse;
@@ -17,15 +17,24 @@ import nhantr.musicapp.mapper.MusicMapper;
 import nhantr.musicapp.repository.AlbumRepository;
 import nhantr.musicapp.repository.ArtistRepository;
 import nhantr.musicapp.repository.SongRepository;
+import nhantr.musicapp.repository.UploadRepository;
+import nhantr.musicapp.entity.Upload;
+import nhantr.musicapp.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import lombok.experimental.FieldDefaults;
-
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetUrlRequest;
+import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class SongServiceImpl implements SongService {
@@ -33,7 +42,13 @@ public class SongServiceImpl implements SongService {
     final SongRepository songRepository;
     final ArtistRepository artistRepository;
     final AlbumRepository albumRepository;
+    final UploadRepository uploadRepository;
     final MusicMapper musicMapper;
+    final S3Client s3Client;
+    final CurrentUserService currentUserService;
+
+    @Value("${aws.s3.bucket-name}")
+    private String bucketName;
 
     @Override
     public PageResponse<SongResponse> getSongs(int page, int size, String sort) {
@@ -89,6 +104,65 @@ public class SongServiceImpl implements SongService {
                 .build();
 
         return musicMapper.toSongResponse(songRepository.save(song));
+    }
+
+    @Override
+    public SongResponse createWithUpload(SongRequest request, MultipartFile audioFile, MultipartFile coverImage) {
+        if (audioFile == null || audioFile.isEmpty()) {
+            throw new AppException(ErrorCode.FILE_PROCESSING_ERROR.getCode(), "Audio file is required");
+        }
+
+        User user = currentUserService.getCurrentUserEntity();
+        log.info("Create upload userId={}, title={}", user.getId(), request.getTitle());
+
+        String fileUrl = uploadToS3(audioFile, "songs/");
+        String coverUrl = uploadToS3(coverImage, "songs/cover_");
+
+        SongRequest newReq = SongRequest.builder()
+                .title(request.getTitle())
+                .artistId(request.getArtistId())
+                .albumId(request.getAlbumId())
+                .duration(request.getDuration())
+                .fileUrl(fileUrl)
+                .coverUrl(coverUrl)
+                .build();
+
+        SongResponse songResponse = create(newReq);
+        Song song = getSongEntity(songResponse.getId());
+
+        // Auto-create Upload record with PENDING status
+        Upload upload = Upload.builder()
+                .user(user)
+                .song(song)
+                .status("PENDING")
+                .createdAt(LocalDateTime.now())
+                .build();
+        uploadRepository.save(upload);
+        log.info("Auto-created upload id={} for song id={}", upload.getId(), song.getId());
+
+        return songResponse;
+    }
+
+    private String uploadToS3(MultipartFile file, String prefix) {
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
+
+        try {
+            String objectKey = prefix + UUID.randomUUID() + "_" + file.getOriginalFilename();
+            PutObjectRequest request = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(objectKey)
+                    .contentType(file.getContentType())
+                    .acl(ObjectCannedACL.PUBLIC_READ)
+                    .build();
+            s3Client.putObject(request, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+            return s3Client.utilities().getUrl(GetUrlRequest.builder().bucket(bucketName).key(objectKey).build()).toString();
+        } catch (IOException e) {
+            throw new AppException(ErrorCode.FILE_PROCESSING_ERROR.getCode(), "Failed to process uploaded file");
+        } catch (Exception e) {
+            throw new AppException(ErrorCode.EXTERNAL_SERVICE_ERROR.getCode(), "Failed to upload to S3");
+        }
     }
 
     @Override
