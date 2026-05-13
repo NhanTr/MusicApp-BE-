@@ -22,6 +22,10 @@ public enum ErrorCode {
     INVALID_INPUT_DATA(400, "Invalid input data provided"),
     PASSWORD_MISMATCH(400, "New password and confirm new password do not match"),
     INVALID_CURRENT_PASSWORD(400, "Current password is incorrect"),
+    OTP_REQUIRED(400, "OTP is required"),
+    INVALID_OTP(400, "OTP is invalid"),
+    OTP_EXPIRED(400, "OTP has expired"),
+    OTP_RESEND_TOO_FAST(429, "Please wait before requesting another OTP"),
 
     // 401 - Unauthorized / Authentication Errors
     UNAUTHORIZED(401, "Unauthorized"),

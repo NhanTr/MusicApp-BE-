@@ -36,4 +36,32 @@ public class RedisServiceImpl implements RedisService {
             return false;
         }
     }
+
+    @Override
+    public void setValue(String key, String value, long ttlInSeconds) {
+        try {
+            redisTemplate.opsForValue().set(key, value, Duration.ofSeconds(Math.max(ttlInSeconds, 1L)));
+        } catch (DataAccessException ex) {
+            log.warn("Failed to set Redis key '{}': {}", key, ex);
+        }
+    }
+
+    @Override
+    public String getValue(String key) {
+        try {
+            return redisTemplate.opsForValue().get(key);
+        } catch (DataAccessException ex) {
+            log.warn("Failed to read Redis key '{}': {}", key, ex);
+            return null;
+        }
+    }
+
+    @Override
+    public void deleteKey(String key) {
+        try {
+            redisTemplate.delete(key);
+        } catch (DataAccessException ex) {
+            log.warn("Failed to delete Redis key '{}': {}", key, ex);
+        }
+    }
 }

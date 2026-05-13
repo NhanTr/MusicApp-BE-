@@ -3,6 +3,7 @@ package nhantr.musicapp.controller;
 import jakarta.validation.Valid;
 import nhantr.musicapp.dto.request.LoginRequest;
 import nhantr.musicapp.dto.request.RegisterRequest;
+import nhantr.musicapp.dto.request.SendOtpRequest;
 import nhantr.musicapp.dto.request.UpdatePasswordRequest;
 import nhantr.musicapp.dto.response.APIResponse;
 import nhantr.musicapp.dto.response.LoginResponse;
@@ -29,6 +30,11 @@ public class AuthController {
         this.authService = authService;
     }
 
+    @PostMapping("/register/send-otp")
+    public ResponseEntity<APIResponse<String>> sendRegisterOtp(@Valid @RequestBody SendOtpRequest request) {
+        return ResponseEntity.ok(APIResponse.success(authService.sendRegisterOtp(request)));
+    }
+
     @PostMapping("/register")
     public ResponseEntity<APIResponse<UserResponse>> register(@Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.ok(APIResponse.success(authService.register(request)));
@@ -37,6 +43,16 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<APIResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(APIResponse.success(authService.login(request)));
+    }
+
+    @PostMapping("/login/send-otp")
+    public ResponseEntity<APIResponse<String>> sendLoginOtp(@Valid @RequestBody SendOtpRequest request) {
+        return ResponseEntity.ok(APIResponse.success(authService.sendLoginOtp(request)));
+    }
+
+    @PostMapping("/login/verify-otp")
+    public ResponseEntity<APIResponse<LoginResponse>> verifyLoginOtp(@Valid @RequestBody nhantr.musicapp.dto.request.VerifyLoginOtpRequest request) {
+        return ResponseEntity.ok(APIResponse.success(authService.verifyLoginOtp(request)));
     }
 
     @PostMapping("/logout")
