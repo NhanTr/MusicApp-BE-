@@ -18,6 +18,9 @@ import nhantr.musicapp.repository.AlbumRepository;
 import nhantr.musicapp.repository.ArtistRepository;
 import nhantr.musicapp.repository.SongRepository;
 import nhantr.musicapp.repository.UploadRepository;
+import nhantr.musicapp.repository.FavoriteRepository;
+import nhantr.musicapp.repository.ListeningHistoryRepository;
+import nhantr.musicapp.repository.PlaylistSongRepository;
 import nhantr.musicapp.entity.Upload;
 import nhantr.musicapp.entity.User;
 import org.springframework.data.domain.Page;
@@ -25,6 +28,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,6 +38,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetUrlRequest;
 import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -43,6 +49,9 @@ public class SongServiceImpl implements SongService {
     final ArtistRepository artistRepository;
     final AlbumRepository albumRepository;
     final UploadRepository uploadRepository;
+    final FavoriteRepository favoriteRepository;
+    final ListeningHistoryRepository listeningHistoryRepository;
+    final PlaylistSongRepository playlistSongRepository;
     final MusicMapper musicMapper;
     final S3Client s3Client;
     final CurrentUserService currentUserService;
@@ -82,9 +91,13 @@ public class SongServiceImpl implements SongService {
     @Override
     public SongResponse create(SongRequest request) {
         log.info("Create song title={}, artistId={}", request.getTitle(), request.getArtistId());
-        Artist artist = artistRepository
-                .findById(request.getArtistId())
-                .orElseThrow(() -> new AppException(ErrorCode.ARTIST_NOT_FOUND.getCode(), ErrorCode.ARTIST_NOT_FOUND.getMessage()));
+        
+        Artist artist = null;
+        if (request.getArtistId() != null) {
+            artist = artistRepository
+                    .findById(request.getArtistId())
+                    .orElseThrow(() -> new AppException(ErrorCode.ARTIST_NOT_FOUND.getCode(), ErrorCode.ARTIST_NOT_FOUND.getMessage()));
+        }
 
         Album album = null;
         if (request.getAlbumId() != null) {
@@ -138,7 +151,7 @@ public class SongServiceImpl implements SongService {
                 .createdAt(LocalDateTime.now())
                 .build();
         uploadRepository.save(upload);
-        log.info("Auto-created upload id={} for song id={}", upload.getId(), song.getId());
+        log.info("Auto-created upload for song id={}", song.getId());
 
         return songResponse;
     }
@@ -191,8 +204,34 @@ public class SongServiceImpl implements SongService {
     }
 
     @Override
+    @Transactional
     public void delete(UUID id) {
         log.info("Delete song id={}", id);
+
+        try {
+            favoriteRepository.deleteBySongId(id);
+        } catch (Exception ex) {
+            log.warn("Failed to delete favorites for song {}: {}", id, ex.getMessage());
+        }
+
+        try {
+            playlistSongRepository.deleteBySongId(id);
+        } catch (Exception ex) {
+            log.warn("Failed to delete playlist-song references for song {}: {}", id, ex.getMessage());
+        }
+
+        try {
+            listeningHistoryRepository.deleteBySongId(id);
+        } catch (Exception ex) {
+            log.warn("Failed to delete listening history for song {}: {}", id, ex.getMessage());
+        }
+
+        try {
+            uploadRepository.deleteBySongId(id);
+        } catch (Exception ex) {
+            log.warn("Failed to delete uploads for song {}: {}", id, ex.getMessage());
+        }
+
         songRepository.delete(getSongEntity(id));
     }
 

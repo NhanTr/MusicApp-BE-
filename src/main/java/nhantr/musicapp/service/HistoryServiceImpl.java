@@ -17,6 +17,7 @@ import nhantr.musicapp.repository.SongRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
@@ -70,10 +71,11 @@ public class HistoryServiceImpl implements HistoryService {
     }
 
     @Override
+    @Transactional
     public void clearAll() {
         User user = currentUserService.getCurrentUserEntity();
         log.info("Clear listening history userId={}", user.getId());
-        listeningHistoryRepository.deleteByUserId(user.getId());
+        listeningHistoryRepository.deleteAllByUser(user);
     }
 
     @Override

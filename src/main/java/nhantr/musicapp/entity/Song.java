@@ -32,8 +32,10 @@ public class Song {
 
     int duration;
 
+    @Column(columnDefinition = "text")
     String fileUrl;
 
+    @Column(columnDefinition = "text")
     String coverUrl;
 
     LocalDateTime createdAt;
