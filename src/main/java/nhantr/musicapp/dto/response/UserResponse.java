@@ -5,17 +5,19 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.FieldDefaults;
 import nhantr.musicapp.enums.Role;
+import java.util.UUID;
 
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class UserResponse {
-
-    private Long id;
-    private String username;
-    private String email;
-    private Role role;
+    UUID id;
+    String username;
+    String email;
+    Role role;
 }

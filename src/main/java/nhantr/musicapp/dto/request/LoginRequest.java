@@ -1,16 +1,23 @@
 package nhantr.musicapp.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.Data;
 
-@Getter
-@Setter
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class LoginRequest {
 
     @NotBlank(message = "Username is required")
-    private String username;
+    String username;
 
     @NotBlank(message = "Password is required")
-    private String password;
+    String password;
 }
