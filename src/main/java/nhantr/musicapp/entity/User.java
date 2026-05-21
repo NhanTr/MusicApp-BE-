@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import nhantr.musicapp.enums.Role;
+import nhantr.musicapp.enums.UserStatus;
 import java.time.LocalDateTime;
 
 @Entity
@@ -31,6 +32,11 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     Role role;
+
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20, columnDefinition = "varchar(20) default 'ACTIVE'")
+    UserStatus status = UserStatus.ACTIVE;
 
     @Column(nullable = false)
     LocalDateTime createdAt;

@@ -14,6 +14,7 @@ import nhantr.musicapp.dto.response.UserResponse;
 import nhantr.musicapp.entity.User;
 import nhantr.musicapp.enums.ErrorCode;
 import nhantr.musicapp.enums.Role;
+import nhantr.musicapp.enums.UserStatus;
 import nhantr.musicapp.exception.AppException;
 import nhantr.musicapp.mapper.UserMapper;
 import nhantr.musicapp.repository.UserRepository;
@@ -177,6 +178,10 @@ public class AuthServiceImpl implements AuthService {
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new AppException(ErrorCode.INVALID_CREDENTIALS.getCode(), ErrorCode.INVALID_CREDENTIALS.getMessage());
+        }
+
+        if (user.getStatus() == UserStatus.BANNED) {
+            throw new AppException(ErrorCode.USER_BANNED.getCode(), ErrorCode.USER_BANNED.getMessage());
         }
 
         String accessToken = jwtUtil.generateAccessToken(user.getUsername());

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import nhantr.musicapp.enums.Role;
+import nhantr.musicapp.enums.UserStatus;
 import java.util.UUID;
 
 @Getter
@@ -20,4 +21,5 @@ public class UserResponse {
     String username;
     String email;
     Role role;
+    UserStatus status;
 }

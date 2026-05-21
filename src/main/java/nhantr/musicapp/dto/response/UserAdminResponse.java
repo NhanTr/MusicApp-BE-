@@ -3,6 +3,7 @@ package nhantr.musicapp.dto.response;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import nhantr.musicapp.enums.Role;
+import nhantr.musicapp.enums.UserStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,5 +21,6 @@ public class UserAdminResponse {
     private String username;
     private String email;
     private Role role;
+    private UserStatus status;
     private LocalDateTime createdAt;
 }
