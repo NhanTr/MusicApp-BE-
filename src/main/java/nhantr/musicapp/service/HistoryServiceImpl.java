@@ -40,12 +40,14 @@ public class HistoryServiceImpl implements HistoryService {
     }
 
     @Override
-    public PageResponse<HistoryResponse> getHistory(int page, int size) {
+    public PageResponse<HistoryResponse> getHistory(int page, int size, String query) {
         User user = currentUserService.getCurrentUserEntity();
-        log.info("Get listening history userId={}, page={}, size={}", user.getId(), page, size);
+        String normalizedQuery = query == null ? "" : query.trim();
+        log.info("Get listening history userId={}, page={}, size={}, query={}", user.getId(), page, size, normalizedQuery);
 
-        Page<HistoryResponse> responsePage = listeningHistoryRepository
-                .findByUserIdOrderByListenedAtDesc(user.getId(), PageRequest.of(page, size))
+        Page<HistoryResponse> responsePage = (normalizedQuery.isEmpty()
+                ? listeningHistoryRepository.findByUserIdOrderByListenedAtDesc(user.getId(), PageRequest.of(page, size))
+                : listeningHistoryRepository.searchByUserId(user.getId(), normalizedQuery, PageRequest.of(page, size)))
                 .map(history -> HistoryResponse.builder()
                         .id(history.getId())
                         .song(musicMapper.toSongResponse(history.getSong()))

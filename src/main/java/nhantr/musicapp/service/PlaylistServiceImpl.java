@@ -49,11 +49,13 @@ public class PlaylistServiceImpl implements PlaylistService {
     }
 
     @Override
-    public PageResponse<PlaylistResponse> getMyPlaylists(int page, int size) {
+    public PageResponse<PlaylistResponse> getMyPlaylists(int page, int size, String query) {
         User user = currentUserService.getCurrentUserEntity();
-        log.info("Get my playlists userId={}, page={}, size={}", user.getId(), page, size);
-        Page<PlaylistResponse> responsePage = playlistRepository
-                .findByUserId(user.getId(), PageRequest.of(page, size))
+        String normalizedQuery = query == null ? "" : query.trim();
+        log.info("Get my playlists userId={}, page={}, size={}, query={}", user.getId(), page, size, normalizedQuery);
+        Page<PlaylistResponse> responsePage = (normalizedQuery.isEmpty()
+                ? playlistRepository.findByUserId(user.getId(), PageRequest.of(page, size))
+                : playlistRepository.searchByUserId(user.getId(), normalizedQuery, PageRequest.of(page, size)))
                 .map(this::toResponse);
         return PageResponse.fromPage(responsePage);
     }
@@ -138,10 +140,12 @@ public class PlaylistServiceImpl implements PlaylistService {
     }
 
     @Override
-    public PageResponse<PlaylistResponse> getPublicPlaylists(int page, int size) {
-        log.info("Get public playlists page={}, size={}", page, size);
-        return PageResponse.fromPage(playlistRepository
-                .findByIsPublicTrue(PageRequest.of(page, size))
+    public PageResponse<PlaylistResponse> getPublicPlaylists(int page, int size, String query) {
+        String normalizedQuery = query == null ? "" : query.trim();
+        log.info("Get public playlists page={}, size={}, query={}", page, size, normalizedQuery);
+        return PageResponse.fromPage((normalizedQuery.isEmpty()
+                ? playlistRepository.findByIsPublicTrue(PageRequest.of(page, size))
+                : playlistRepository.searchPublic(normalizedQuery, PageRequest.of(page, size)))
                 .map(this::toResponse));
     }
 

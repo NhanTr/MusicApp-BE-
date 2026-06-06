@@ -9,7 +9,7 @@ import nhantr.musicapp.dto.response.PlaylistResponse;
 
 public interface PlaylistService {
 
-    PageResponse<PlaylistResponse> getMyPlaylists(int page, int size);
+    PageResponse<PlaylistResponse> getMyPlaylists(int page, int size, String query);
 
     PlaylistResponse getPlaylist(UUID id);
 
@@ -23,5 +23,5 @@ public interface PlaylistService {
 
     void removeSong(UUID id, UUID songId);
 
-    PageResponse<PlaylistResponse> getPublicPlaylists(int page, int size);
+    PageResponse<PlaylistResponse> getPublicPlaylists(int page, int size, String query);
 }

@@ -6,7 +6,7 @@ import nhantr.musicapp.dto.response.PageResponse;
 
 public interface FavoriteService {
 
-    PageResponse<FavoriteResponse> getFavorites(int page, int size);
+    PageResponse<FavoriteResponse> getFavorites(int page, int size, String query);
 
     void like(UUID songId);
 

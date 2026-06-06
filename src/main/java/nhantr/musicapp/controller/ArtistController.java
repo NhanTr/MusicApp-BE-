@@ -33,8 +33,9 @@ public class ArtistController {
     @GetMapping
     public ResponseEntity<APIResponse<PageResponse<ArtistResponse>>> getArtists(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(APIResponse.success(artistService.getArtists(page, size)));
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "") String q) {
+        return ResponseEntity.ok(APIResponse.success(artistService.getArtists(page, size, q)));
     }
 
     @GetMapping("/{id}")

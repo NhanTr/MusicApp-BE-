@@ -30,8 +30,9 @@ public class HistoryController {
     @GetMapping
     public ResponseEntity<APIResponse<PageResponse<HistoryResponse>>> getHistory(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(APIResponse.success(historyService.getHistory(page, size)));
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "") String q) {
+        return ResponseEntity.ok(APIResponse.success(historyService.getHistory(page, size, q)));
     }
 
     @PostMapping

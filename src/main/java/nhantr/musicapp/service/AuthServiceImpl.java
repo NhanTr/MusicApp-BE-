@@ -254,9 +254,6 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository
                 .findByUsername(authentication.getName())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND.getCode(), ErrorCode.USER_NOT_FOUND.getMessage()));
-        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
-            throw new AppException(ErrorCode.INVALID_CURRENT_PASSWORD.getCode(), ErrorCode.INVALID_CURRENT_PASSWORD.getMessage());
-        }
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);

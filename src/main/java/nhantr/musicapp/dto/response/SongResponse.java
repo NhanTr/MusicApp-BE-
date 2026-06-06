@@ -22,5 +22,6 @@ public class SongResponse {
 	private String fileUrl;
 	private ArtistSummaryResponse artist;
 	private AlbumSummaryResponse album;
+	private long listenerCount;
 	private LocalDateTime createdAt;
 }
