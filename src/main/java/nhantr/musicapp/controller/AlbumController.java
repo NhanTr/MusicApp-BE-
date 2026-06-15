@@ -8,7 +8,6 @@ import nhantr.musicapp.dto.response.AlbumResponse;
 import nhantr.musicapp.dto.response.PageResponse;
 import nhantr.musicapp.service.AlbumService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,8 +31,14 @@ public class AlbumController {
     @GetMapping
     public ResponseEntity<APIResponse<PageResponse<AlbumResponse>>> getAlbums(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(APIResponse.success(albumService.getAlbums(page, size)));
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "") String q,
+            @RequestParam(required = false) UUID artistId) {
+        return ResponseEntity.ok(APIResponse.success(
+                artistId == null
+                        ? albumService.getAlbums(page, size, q)
+                        : albumService.getAlbumsByArtistId(artistId, page, size, q)
+        ));
     }
 
     @GetMapping("/{id}")

@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import nhantr.musicapp.entity.User;
+import nhantr.musicapp.enums.UserStatus;
 import nhantr.musicapp.repository.UserRepository;
 import nhantr.musicapp.service.RedisService;
 import nhantr.musicapp.util.JwtUtil;
@@ -50,7 +51,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String username = jwtUtil.extractUsername(token);
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 User user = userRepository.findByUsername(username).orElse(null);
-                if (user != null && jwtUtil.validateToken(token, username)) {
+                if (user != null && user.getStatus() != UserStatus.BANNED && jwtUtil.validateToken(token, username)) {
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                             username,
                             null,

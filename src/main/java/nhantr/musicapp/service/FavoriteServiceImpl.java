@@ -32,11 +32,13 @@ public class FavoriteServiceImpl implements FavoriteService {
     private final MusicMapper musicMapper;
 
     @Override
-    public PageResponse<FavoriteResponse> getFavorites(int page, int size) {
+    public PageResponse<FavoriteResponse> getFavorites(int page, int size, String query) {
         User user = currentUserService.getCurrentUserEntity();
-        log.info("Get favorites userId={}, page={}, size={}", user.getId(), page, size);
-        Page<FavoriteResponse> responsePage = favoriteRepository
-                .findByUserId(user.getId(), PageRequest.of(page, size))
+        String normalizedQuery = query == null ? "" : query.trim();
+        log.info("Get favorites userId={}, page={}, size={}, query={}", user.getId(), page, size, normalizedQuery);
+        Page<FavoriteResponse> responsePage = (normalizedQuery.isEmpty()
+                ? favoriteRepository.findByUserId(user.getId(), PageRequest.of(page, size))
+                : favoriteRepository.searchByUserId(user.getId(), normalizedQuery, PageRequest.of(page, size)))
                 .map(favorite -> FavoriteResponse.builder()
                         .song(musicMapper.toSongResponse(favorite.getSong()))
                         .addedAt(LocalDateTime.now())

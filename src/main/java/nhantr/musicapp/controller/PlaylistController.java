@@ -33,15 +33,17 @@ public class PlaylistController {
     @GetMapping
     public ResponseEntity<APIResponse<PageResponse<PlaylistResponse>>> getMyPlaylists(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(APIResponse.success(playlistService.getMyPlaylists(page, size)));
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "") String q) {
+        return ResponseEntity.ok(APIResponse.success(playlistService.getMyPlaylists(page, size, q)));
     }
 
     @GetMapping("/public")
     public ResponseEntity<APIResponse<PageResponse<PlaylistResponse>>> getPublicPlaylists(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(APIResponse.success(playlistService.getPublicPlaylists(page, size)));
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "") String q) {
+        return ResponseEntity.ok(APIResponse.success(playlistService.getPublicPlaylists(page, size, q)));
     }
 
     @GetMapping("/{id}")

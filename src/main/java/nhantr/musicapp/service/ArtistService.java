@@ -8,7 +8,7 @@ import nhantr.musicapp.dto.response.SongResponse;
 
 public interface ArtistService {
 
-    PageResponse<ArtistResponse> getArtists(int page, int size);
+    PageResponse<ArtistResponse> getArtists(int page, int size, String query);
 
     ArtistResponse getArtist(UUID id);
 

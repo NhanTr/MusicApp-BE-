@@ -7,7 +7,7 @@ import nhantr.musicapp.dto.response.PageResponse;
 
 public interface HistoryService {
 
-    PageResponse<HistoryResponse> getHistory(int page, int size);
+    PageResponse<HistoryResponse> getHistory(int page, int size, String query);
 
     void add(HistoryRequest request);
 

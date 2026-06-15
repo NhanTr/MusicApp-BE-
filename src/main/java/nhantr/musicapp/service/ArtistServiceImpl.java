@@ -33,10 +33,12 @@ public class ArtistServiceImpl implements ArtistService {
     private final MusicMapper musicMapper;
 
     @Override
-    public PageResponse<ArtistResponse> getArtists(int page, int size) {
-        log.info("Get artists page={}, size={}", page, size);
-        Page<ArtistResponse> responsePage = artistRepository
-                .findAll(PageRequest.of(page, size))
+    public PageResponse<ArtistResponse> getArtists(int page, int size, String query) {
+        String normalizedQuery = query == null ? "" : query.trim();
+        log.info("Get artists page={}, size={}, query={}", page, size, normalizedQuery);
+        Page<ArtistResponse> responsePage = (normalizedQuery.isEmpty()
+                ? artistRepository.findAll(PageRequest.of(page, size))
+                : artistRepository.search(normalizedQuery, PageRequest.of(page, size)))
                 .map(this::toResponse);
         return PageResponse.fromPage(responsePage);
     }

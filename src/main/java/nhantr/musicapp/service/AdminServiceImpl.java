@@ -8,6 +8,7 @@ import nhantr.musicapp.dto.response.StatsResponse;
 import nhantr.musicapp.dto.response.UserAdminResponse;
 import nhantr.musicapp.entity.User;
 import nhantr.musicapp.enums.ErrorCode;
+import nhantr.musicapp.enums.UserStatus;
 import nhantr.musicapp.exception.AppException;
 import nhantr.musicapp.repository.ArtistRepository;
 import nhantr.musicapp.repository.ListeningHistoryRepository;
@@ -52,7 +53,7 @@ public class AdminServiceImpl implements AdminService {
     public void ban(UUID id, BanUserRequest request) {
         log.info("Admin ban user id={}, reason={}", id, request.getReason());
         User user = getUserEntity(id);
-        user.setPassword("LOCKED_" + user.getPassword());
+        user.setStatus(UserStatus.BANNED);
         userRepository.save(user);
     }
 
@@ -60,10 +61,8 @@ public class AdminServiceImpl implements AdminService {
     public void unban(UUID id) {
         log.info("Admin unban user id={}", id);
         User user = getUserEntity(id);
-        if (user.getPassword() != null && user.getPassword().startsWith("LOCKED_")) {
-            user.setPassword(user.getPassword().substring(7));
-            userRepository.save(user);
-        }
+        user.setStatus(UserStatus.ACTIVE);
+        userRepository.save(user);
     }
 
     @Override
@@ -97,6 +96,7 @@ public class AdminServiceImpl implements AdminService {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .role(user.getRole())
+            .status(user.getStatus())
                 .createdAt(user.getCreatedAt())
                 .build();
     }

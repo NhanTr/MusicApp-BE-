@@ -14,6 +14,7 @@ import nhantr.musicapp.dto.response.UserResponse;
 import nhantr.musicapp.entity.User;
 import nhantr.musicapp.enums.ErrorCode;
 import nhantr.musicapp.enums.Role;
+import nhantr.musicapp.enums.UserStatus;
 import nhantr.musicapp.exception.AppException;
 import nhantr.musicapp.mapper.UserMapper;
 import nhantr.musicapp.repository.UserRepository;
@@ -179,6 +180,10 @@ public class AuthServiceImpl implements AuthService {
             throw new AppException(ErrorCode.INVALID_CREDENTIALS.getCode(), ErrorCode.INVALID_CREDENTIALS.getMessage());
         }
 
+        if (user.getStatus() == UserStatus.BANNED) {
+            throw new AppException(ErrorCode.USER_BANNED.getCode(), ErrorCode.USER_BANNED.getMessage());
+        }
+
         String accessToken = jwtUtil.generateAccessToken(user.getUsername());
         String refreshToken = jwtUtil.generateRefreshToken(user.getUsername());
 
@@ -249,9 +254,6 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository
                 .findByUsername(authentication.getName())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND.getCode(), ErrorCode.USER_NOT_FOUND.getMessage()));
-        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
-            throw new AppException(ErrorCode.INVALID_CURRENT_PASSWORD.getCode(), ErrorCode.INVALID_CURRENT_PASSWORD.getMessage());
-        }
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);

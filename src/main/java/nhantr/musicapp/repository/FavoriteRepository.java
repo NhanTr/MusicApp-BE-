@@ -15,6 +15,20 @@ public interface FavoriteRepository extends JpaRepository<Favorite, FavoriteId> 
 
     Page<Favorite> findByUserId(UUID userId, Pageable pageable);
 
+        @Query("""
+                        select f from Favorite f
+                        left join f.song s
+                        left join s.artist a
+                        left join s.album al
+                        where f.user.id = :userId
+                            and (
+                                lower(coalesce(s.title, '')) like lower(concat('%', :query, '%'))
+                                or lower(coalesce(a.name, '')) like lower(concat('%', :query, '%'))
+                                or lower(coalesce(al.name, '')) like lower(concat('%', :query, '%'))
+                            )
+                        """)
+        Page<Favorite> searchByUserId(@Param("userId") UUID userId, @Param("query") String query, Pageable pageable);
+
     boolean existsByUserIdAndSongId(UUID userId, UUID songId);
 
     void deleteByUserIdAndSongId(UUID userId, UUID songId);

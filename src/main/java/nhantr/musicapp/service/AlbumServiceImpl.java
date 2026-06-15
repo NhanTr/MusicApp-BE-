@@ -34,9 +34,24 @@ public class AlbumServiceImpl implements AlbumService {
     private final MusicMapper musicMapper;
 
     @Override
-    public PageResponse<AlbumResponse> getAlbums(int page, int size) {
-        log.info("Get albums page={}, size={}", page, size);
-        Page<AlbumResponse> responsePage = albumRepository.findAll(PageRequest.of(page, size)).map(this::toResponse);
+    public PageResponse<AlbumResponse> getAlbums(int page, int size, String query) {
+        String normalizedQuery = query == null ? "" : query.trim();
+        log.info("Get albums page={}, size={}, query={}", page, size, normalizedQuery);
+        Page<AlbumResponse> responsePage = (normalizedQuery.isEmpty()
+                ? albumRepository.findAll(PageRequest.of(page, size))
+                : albumRepository.search(normalizedQuery, PageRequest.of(page, size)))
+                .map(this::toResponse);
+        return PageResponse.fromPage(responsePage);
+    }
+
+    @Override
+    public PageResponse<AlbumResponse> getAlbumsByArtistId(UUID artistId, int page, int size, String query) {
+        String normalizedQuery = query == null ? "" : query.trim();
+        log.info("Get albums by artistId={}, page={}, size={}, query={}", artistId, page, size, normalizedQuery);
+        Page<AlbumResponse> responsePage = (normalizedQuery.isEmpty()
+                ? albumRepository.findByArtistId(artistId, PageRequest.of(page, size))
+                : albumRepository.searchByArtistId(artistId, normalizedQuery, PageRequest.of(page, size)))
+                .map(this::toResponse);
         return PageResponse.fromPage(responsePage);
     }
 

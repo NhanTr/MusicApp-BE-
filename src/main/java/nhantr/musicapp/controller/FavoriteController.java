@@ -28,8 +28,9 @@ public class FavoriteController {
     @GetMapping
     public ResponseEntity<APIResponse<PageResponse<FavoriteResponse>>> getFavorites(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(APIResponse.success(favoriteService.getFavorites(page, size)));
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "") String q) {
+        return ResponseEntity.ok(APIResponse.success(favoriteService.getFavorites(page, size, q)));
     }
 
     @PostMapping("/{songId}")

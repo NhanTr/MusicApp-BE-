@@ -7,7 +7,9 @@ import nhantr.musicapp.dto.response.PageResponse;
 
 public interface AlbumService {
 
-    PageResponse<AlbumResponse> getAlbums(int page, int size);
+    PageResponse<AlbumResponse> getAlbums(int page, int size, String query);
+
+    PageResponse<AlbumResponse> getAlbumsByArtistId(UUID artistId, int page, int size, String query);
 
     AlbumResponse getAlbum(UUID id);
 

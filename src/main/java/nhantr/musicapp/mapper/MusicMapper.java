@@ -9,10 +9,15 @@ import nhantr.musicapp.dto.response.PlaylistResponse;
 import nhantr.musicapp.dto.response.SongResponse;
 import nhantr.musicapp.entity.Playlist;
 import nhantr.musicapp.entity.Song;
+import nhantr.musicapp.repository.ListeningHistoryRepository;
 import org.springframework.stereotype.Component;
+import lombok.RequiredArgsConstructor;
 
 @Component
+@RequiredArgsConstructor
 public class MusicMapper {
+
+    private final ListeningHistoryRepository listeningHistoryRepository;
 
     public SongResponse toSongResponse(Song song) {
         if (song == null) {
@@ -37,6 +42,7 @@ public class MusicMapper {
                                 .id(song.getAlbum().getId())
                                 .name(song.getAlbum().getName())
                                 .build())
+                .listenerCount(song.getId() == null ? 0 : listeningHistoryRepository.countDistinctUserIdBySongId(song.getId()))
                 .createdAt(song.getCreatedAt())
                 .build();
     }

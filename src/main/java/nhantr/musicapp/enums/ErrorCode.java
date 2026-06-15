@@ -30,6 +30,7 @@ public enum ErrorCode {
     // 401 - Unauthorized / Authentication Errors
     UNAUTHORIZED(401, "Unauthorized"),
     INVALID_CREDENTIALS(401, "Invalid username or password"),
+    USER_BANNED(403, "User account is banned"),
     TOKEN_EXPIRED(401, "Token has expired"),
     INVALID_TOKEN(401, "Invalid token"),
     TOKEN_MALFORMED(401, "Token is malformed or corrupted"),
