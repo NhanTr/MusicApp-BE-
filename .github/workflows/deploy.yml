@@ -1,0 +1,65 @@
+name: Deploy to Amazon ECS
+
+on:
+  push:
+    branches:
+      - main # Khi bạn push code vào nhánh main thì hệ thống tự chạy
+
+env:
+  AWS_REGION: ap-southeast-1                   # Điền Region AWS của bạn
+  ECR_REPOSITORY: music-app-backend            # Tên Repository ECR bạn tạo ở bài trước
+  ECS_SERVICE: music-app-backend-service       # Tên ECS Service của bạn
+  ECS_CLUSTER: music-app-cluster               # Tên ECS Cluster của bạn
+  ECS_TASK_DEFINITION: music-app-task          # Tên ECS Task Definition của bạn
+  CONTAINER_NAME: backend                      # Tên Container đặt trong Task Definition
+
+jobs:
+  deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ id.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }} # Dùng mã hash của Git làm tag để không bị trùng
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+    # Tải bản thiết kế Task định nghĩa hiện tại từ AWS về để chỉnh sửa tag ảnh mới
+    - name: Download current task definition
+      run: |
+        aws ecs describe-task-definition --task-definition ${{ env.ECS_TASK_DEFINITION }} --query taskDefinition > task-definition.json
+
+    - name: Fill in the new image ID in the Amazon ECS task definition
+      id: render-task-def
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: task-definition.json
+        container-name: ${{ env.CONTAINER_NAME }}
+        image: ${{ steps.build-image.outputs.image }}
+
+    - name: Deploy Amazon ECS task definition
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+      with:
+        task-definition: ${{ steps.render-task-def.outputs.task-definition }}
+        service: ${{ env.ECS_SERVICE }}
+        cluster: ${{ env.ECS_CLUSTER }}
+        wait-for-service-stability: true
