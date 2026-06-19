@@ -76,7 +76,7 @@ public class SongServiceImpl implements SongService {
     @Override
     public PageResponse<SongResponse> search(String query, String type, int page, int size) {
         log.info("Search songs query={}, type={}, page={}, size={}", query, type, page, size);
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "created_at"));
         Page<Song> songPage = songRepository.search(query == null ? "" : query, pageable);
         return PageResponse.fromPage(songPage.map(musicMapper::toSongResponse));
     }

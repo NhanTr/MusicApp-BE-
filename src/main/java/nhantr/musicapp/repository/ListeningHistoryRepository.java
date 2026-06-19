@@ -14,24 +14,30 @@ public interface ListeningHistoryRepository extends JpaRepository<ListeningHisto
 
     Page<ListeningHistory> findByUserIdOrderByListenedAtDesc(UUID userId, Pageable pageable);
 
-        @Query("select count(distinct h.user.id) from ListeningHistory h where h.song.id = :songId")
-        long countDistinctUserIdBySongId(@Param("songId") UUID songId);
-
-        @Query("""
-                        select h from ListeningHistory h
-                        left join h.song s
-                        left join s.artist a
-                        left join s.album al
-                        where h.user.id = :userId
-                            and (
-                                lower(coalesce(s.title, '')) like lower(concat('%', :query, '%'))
-                                or lower(coalesce(a.name, '')) like lower(concat('%', :query, '%'))
-                                or lower(coalesce(al.name, '')) like lower(concat('%', :query, '%'))
-                            )
-                        order by h.listenedAt desc
-                        """)
-        Page<ListeningHistory> searchByUserId(@Param("userId") UUID userId, @Param("query") String query, Pageable pageable);
-
+    @Query(value = """
+            SELECT COUNT(DISTINCT h.user_id)
+            FROM listening_histories h
+            WHERE h.song_id = :songId
+            """,
+            nativeQuery = true)
+    long countDistinctUserIdBySongId(@Param("songId") UUID songId);
+ 
+    @Query(value = """
+            SELECT h.*
+            FROM listening_histories h
+            LEFT JOIN songs s  ON s.id  = h.song_id
+            LEFT JOIN artists a  ON a.id  = s.artist_id
+            LEFT JOIN albums al ON al.id = s.album_id
+            WHERE h.user_id = :userId
+              AND (
+                  unaccent(lower(coalesce(s.title, '')))  LIKE unaccent(lower(concat('%', :query, '%')))
+               OR unaccent(lower(coalesce(a.name, '')))   LIKE unaccent(lower(concat('%', :query, '%')))
+               OR unaccent(lower(coalesce(al.name, '')))  LIKE unaccent(lower(concat('%', :query, '%')))
+              )
+            ORDER BY h.listened_at DESC
+            """,
+            nativeQuery = true)
+    Page<ListeningHistory> searchByUserId(@Param("userId") UUID userId, @Param("query") String query, Pageable pageable);
     @Modifying(clearAutomatically = true)
     @Query("delete from ListeningHistory h where h.user = :user")
     void deleteAllByUser(User user);

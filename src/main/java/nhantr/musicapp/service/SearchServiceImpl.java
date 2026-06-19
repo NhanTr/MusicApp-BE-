@@ -35,23 +35,9 @@ public class SearchServiceImpl implements SearchService {
         String q = query == null ? "" : query;
 
         List<SongResponse> songs = songRepository.search(q, PageRequest.of(page, size)).map(musicMapper::toSongResponse).getContent();
-        List<ArtistSummaryResponse> artists = artistRepository.findAll(PageRequest.of(page, size)).stream()
-                .filter(a -> a.getName() != null && a.getName().toLowerCase().contains(q.toLowerCase()))
-                .map(a -> ArtistSummaryResponse.builder().id(a.getId()).name(a.getName()).build())
-                .toList();
-        List<AlbumSummaryResponse> albums = albumRepository.findAll(PageRequest.of(page, size)).stream()
-                .filter(a -> a.getName() != null && a.getName().toLowerCase().contains(q.toLowerCase()))
-                .map(a -> AlbumSummaryResponse.builder().id(a.getId()).name(a.getName()).build())
-                .toList();
-        List<PlaylistResponse> playlists = playlistRepository.findByIsPublicTrue(PageRequest.of(page, size)).stream()
-                .filter(p -> p.getName() != null && p.getName().toLowerCase().contains(q.toLowerCase()))
-                .map(p -> PlaylistResponse.builder()
-                        .id(p.getId())
-                        .name(p.getName())
-                        .isPublic(p.isPublic())
-                        .songCount(0)
-                        .build())
-                .toList();
+        List<ArtistSummaryResponse> artists = artistRepository.search(q, PageRequest.of(page, size)).map(musicMapper::toArtistSummaryResponse).getContent();
+        List<AlbumSummaryResponse> albums = albumRepository.search(q, PageRequest.of(page, size)).map(musicMapper::toAlbumSummaryResponse).getContent();
+        List<PlaylistResponse> playlists = playlistRepository.searchPublic(q, PageRequest.of(page, size)).map(musicMapper::toPlaylistResponse).getContent();
 
         return SearchResponse.builder()
                 .songs(songs)

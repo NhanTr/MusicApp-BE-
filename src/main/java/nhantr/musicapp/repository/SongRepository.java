@@ -10,23 +10,30 @@ import org.springframework.data.repository.query.Param;
 
 public interface SongRepository extends JpaRepository<Song, UUID> {
 
-    @Query("""
-            select s from Song s
-            left join s.artist a
-            left join s.album al
-            where lower(s.title) like lower(concat('%', :query, '%'))
-               or lower(coalesce(a.name, '')) like lower(concat('%', :query, '%'))
-               or lower(coalesce(al.name, '')) like lower(concat('%', :query, '%'))
-            """)
-    Page<Song> search(@Param("query") String query, Pageable pageable);
-
-    @Query("""
-            select s from Song s
-            left join ListeningHistory h on h.song.id = s.id
-            group by s.id
-            order by count(h.id) desc, s.createdAt desc
-            """)
+    @Query(value = """
+            SELECT s.*
+            FROM songs s
+            LEFT JOIN listening_histories h ON h.song_id = s.id
+            GROUP BY s.id
+            ORDER BY COUNT(h.id) DESC, s.created_at DESC
+            """,
+            nativeQuery = true)
     Page<Song> findTrending(Pageable pageable);
+
+    @Query(value = """
+    SELECT s.*
+    FROM songs s
+    LEFT JOIN artists a ON a.id = s.artist_id
+    LEFT JOIN albums al ON al.id = s.album_id
+    WHERE unaccent(lower(s.title))
+        LIKE unaccent(lower(concat('%', :query, '%')))
+    OR unaccent(lower(coalesce(a.name, '')))
+        LIKE unaccent(lower(concat('%', :query, '%')))
+    OR unaccent(lower(coalesce(al.name, '')))
+        LIKE unaccent(lower(concat('%', :query, '%')))
+    """,
+    nativeQuery = true)
+    Page<Song> search(@Param("query") String query, Pageable pageable);
 
     Page<Song> findByArtistId(UUID artistId, Pageable pageable);
 

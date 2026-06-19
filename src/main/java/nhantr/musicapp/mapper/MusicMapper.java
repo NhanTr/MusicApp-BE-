@@ -61,4 +61,37 @@ public class MusicMapper {
                 .createdAt(playlist.getCreatedAt() == null ? LocalDateTime.now() : playlist.getCreatedAt())
                 .build();
     }
+
+    public ArtistSummaryResponse toArtistSummaryResponse(nhantr.musicapp.entity.Artist artist) {
+        if (artist == null) {
+            return null;
+        }
+
+        return ArtistSummaryResponse.builder()
+                .id(artist.getId())
+                .name(artist.getName())
+                .build();
+    }
+
+    public AlbumSummaryResponse toAlbumSummaryResponse(nhantr.musicapp.entity.Album album) {
+        if (album == null) {
+            return null;
+        }
+
+        return AlbumSummaryResponse.builder()
+                .id(album.getId())
+                .name(album.getName())
+                .build();
+    }
+
+    public PlaylistResponse toPlaylistResponse(Playlist playlist) {
+        return PlaylistResponse.builder()
+                .id(playlist.getId())
+                .name(playlist.getName())
+                .isPublic(playlist.isPublic())
+                .songCount(0)
+                .songs(List.of())
+                .createdAt(playlist.getCreatedAt() == null ? LocalDateTime.now() : playlist.getCreatedAt())
+                .build();
+    }
 }

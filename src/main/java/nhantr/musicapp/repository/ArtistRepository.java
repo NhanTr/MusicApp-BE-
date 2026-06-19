@@ -10,10 +10,12 @@ import org.springframework.data.repository.query.Param;
 
 public interface ArtistRepository extends JpaRepository<Artist, UUID> {
 
-	@Query("""
-			select a from Artist a
-			where lower(coalesce(a.name, '')) like lower(concat('%', :query, '%'))
-			   or lower(coalesce(a.bio, '')) like lower(concat('%', :query, '%'))
-			""")
-	Page<Artist> search(@Param("query") String query, Pageable pageable);
+	@Query(value = """
+            SELECT a.*
+            FROM artists a
+            WHERE unaccent(lower(coalesce(a.name, ''))) LIKE unaccent(lower(concat('%', :query, '%')))
+               OR unaccent(lower(coalesce(a.bio, '')))  LIKE unaccent(lower(concat('%', :query, '%')))
+            """,
+            nativeQuery = true)
+    Page<Artist> search(@Param("query") String query, Pageable pageable);
 }

@@ -14,17 +14,20 @@ public interface PlaylistRepository extends JpaRepository<Playlist, UUID> {
 
     Page<Playlist> findByIsPublicTrue(Pageable pageable);
 
-        @Query("""
-                        select p from Playlist p
-                        where p.user.id = :userId
-                            and lower(coalesce(p.name, '')) like lower(concat('%', :query, '%'))
-                        """)
-        Page<Playlist> searchByUserId(@Param("userId") UUID userId, @Param("query") String query, Pageable pageable);
-
-        @Query("""
-                        select p from Playlist p
-                        where p.isPublic = true
-                            and lower(coalesce(p.name, '')) like lower(concat('%', :query, '%'))
-                        """)
-        Page<Playlist> searchPublic(@Param("query") String query, Pageable pageable);
+        @Query(value = """
+            SELECT p.*
+            FROM playlists p
+            WHERE p.user_id = :userId
+              AND unaccent(lower(coalesce(p.name, ''))) LIKE unaccent(lower(concat('%', :query, '%')))
+            """,
+            nativeQuery = true)
+    Page<Playlist> searchByUserId(@Param("userId") UUID userId, @Param("query") String query, Pageable pageable);
+    @Query(value = """
+            SELECT p.*
+            FROM playlists p
+            WHERE p.is_public = true
+              AND unaccent(lower(coalesce(p.name, ''))) LIKE unaccent(lower(concat('%', :query, '%')))
+            """,
+            nativeQuery = true)
+    Page<Playlist> searchPublic(@Param("query") String query, Pageable pageable);
 }

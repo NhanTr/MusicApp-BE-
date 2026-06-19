@@ -15,19 +15,21 @@ public interface FavoriteRepository extends JpaRepository<Favorite, FavoriteId> 
 
     Page<Favorite> findByUserId(UUID userId, Pageable pageable);
 
-        @Query("""
-                        select f from Favorite f
-                        left join f.song s
-                        left join s.artist a
-                        left join s.album al
-                        where f.user.id = :userId
-                            and (
-                                lower(coalesce(s.title, '')) like lower(concat('%', :query, '%'))
-                                or lower(coalesce(a.name, '')) like lower(concat('%', :query, '%'))
-                                or lower(coalesce(al.name, '')) like lower(concat('%', :query, '%'))
-                            )
-                        """)
-        Page<Favorite> searchByUserId(@Param("userId") UUID userId, @Param("query") String query, Pageable pageable);
+        @Query(value = """
+            SELECT f.*
+            FROM favorites f
+            LEFT JOIN songs s  ON s.id  = f.song_id
+            LEFT JOIN artists a  ON a.id  = s.artist_id
+            LEFT JOIN albums al ON al.id = s.album_id
+            WHERE f.user_id = :userId
+              AND (
+                  unaccent(lower(coalesce(s.title, '')))  LIKE unaccent(lower(concat('%', :query, '%')))
+               OR unaccent(lower(coalesce(a.name, '')))   LIKE unaccent(lower(concat('%', :query, '%')))
+               OR unaccent(lower(coalesce(al.name, '')))  LIKE unaccent(lower(concat('%', :query, '%')))
+              )
+            """,
+            nativeQuery = true)
+    Page<Favorite> searchByUserId(@Param("userId") UUID userId, @Param("query") String query, Pageable pageable);
 
     boolean existsByUserIdAndSongId(UUID userId, UUID songId);
 
