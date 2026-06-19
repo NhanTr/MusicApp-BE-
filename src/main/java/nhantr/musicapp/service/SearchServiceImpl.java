@@ -1,5 +1,7 @@
 package nhantr.musicapp.service;
 
+import java.text.Normalizer;
+
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -28,23 +30,36 @@ public class SearchServiceImpl implements SearchService {
     private final PlaylistRepository playlistRepository;
     private final MusicMapper musicMapper;
 
+    private String normalize(String s) {
+        if (s == null) return "";
+        String normalized = Normalizer.normalize(s, Normalizer.Form.NFD);
+        return normalized.replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
+                         .replaceAll("[đĐ]", "d")
+                         .toLowerCase()
+                         .trim();
+    }
+
 
     @Override
     public SearchResponse search(String query, int page, int size) {
         log.info("Global search query={}, page={}, size={}", query, page, size);
         String q = query == null ? "" : query;
 
-        List<SongResponse> songs = songRepository.search(q, PageRequest.of(page, size)).map(musicMapper::toSongResponse).getContent();
+        List<SongResponse> songs = songRepository.findAll(PageRequest.of(page, size)).stream()
+                .filter(s -> normalize(s.getTitle()).contains(normalize(q))
+                || normalize(s.getArtist() != null ? s.getArtist().getName() : "").contains(normalize(q)))
+                .map(musicMapper::toSongResponse)
+                .toList();
         List<ArtistSummaryResponse> artists = artistRepository.findAll(PageRequest.of(page, size)).stream()
-                .filter(a -> a.getName() != null && a.getName().toLowerCase().contains(q.toLowerCase()))
+                .filter(a -> normalize(a.getName()).contains(normalize(q)))
                 .map(a -> ArtistSummaryResponse.builder().id(a.getId()).name(a.getName()).build())
                 .toList();
         List<AlbumSummaryResponse> albums = albumRepository.findAll(PageRequest.of(page, size)).stream()
-                .filter(a -> a.getName() != null && a.getName().toLowerCase().contains(q.toLowerCase()))
+                .filter(a -> normalize(a.getName()).contains(normalize(q)))
                 .map(a -> AlbumSummaryResponse.builder().id(a.getId()).name(a.getName()).build())
                 .toList();
         List<PlaylistResponse> playlists = playlistRepository.findByIsPublicTrue(PageRequest.of(page, size)).stream()
-                .filter(p -> p.getName() != null && p.getName().toLowerCase().contains(q.toLowerCase()))
+                .filter(p -> normalize(p.getName()).contains(normalize(q)))
                 .map(p -> PlaylistResponse.builder()
                         .id(p.getId())
                         .name(p.getName())
