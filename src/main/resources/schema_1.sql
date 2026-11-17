@@ -1,6 +1,7 @@
 -- Bước 1: Tạo user
 CREATE USER app_user WITH PASSWORD 'app_user_1412';
 
+CREATE EXTENSION IF NOT EXISTS unaccent;
 -- Bước 2: Cấp quyền kết nối vào DB (thiếu cái này là không vào được)
 GRANT CONNECT ON DATABASE "SoundCloudDB" TO app_user;
 GRANT USAGE ON SCHEMA public TO app_user;

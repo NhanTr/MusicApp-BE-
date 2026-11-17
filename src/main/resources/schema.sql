@@ -63,7 +63,6 @@ CREATE TABLE public.artists (
     name character varying(255) NOT NULL
 );
 
-
 ALTER TABLE public.artists OWNER TO app_user;
 
 --

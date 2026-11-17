@@ -38,6 +38,7 @@ public enum ErrorCode {
     AUTHENTICATION_FAILED(401, "Authentication failed"),
     INSUFFICIENT_PERMISSIONS(401, "Insufficient permissions to perform this action"),
     SESSION_EXPIRED(401, "Session has expired"),
+    USER_EXISTED(401, "User already exists"),
 
     // 403 - Forbidden
     FORBIDDEN(403, "Forbidden"),
@@ -55,6 +56,7 @@ public enum ErrorCode {
     DUPLICATE_ENTRY(409, "Duplicate entry"),
     RESOURCE_ALREADY_EXISTS(409, "Resource already exists"),
     USER_ALREADY_FOLLOWS(409, "User already follows this resource"),
+
 
     // 429 - Too Many Requests
     RATE_LIMIT_EXCEEDED(429, "Rate limit exceeded. Please try again later"),
